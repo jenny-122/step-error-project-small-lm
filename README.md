@@ -1,17 +1,14 @@
-## Step-Error Project: Small Language Models for Misconception Discovery
+# Step-Error Project: Small Language Models for Misconception Discovery
 
-This repository is a scaled-down project inspired by *The Error Is the Signal: Misconception Discovery via Step-Error Annotation Clustering*.
+This repository is a scaled-down research project inspired by *The Error Is the Signal: Misconception Discovery via Step-Error Annotation Clustering*.
 
-### Source Project
-- Inspired by *The Error Is the Signal: Misconception Discovery via Step-Error Annotation Clustering* ([paper](https://aclanthology.org/2026.aacl-long.221/)); the paper lists [`sonkar-lab/llm_misconception_discovery`](https://github.com/sonkar-lab/llm_misconception_discovery) as its code repository.
+## Sources
 
-### Original Paper
-- Uses step-error annotations to represent specific student mistakes
-- Tests whether those representations improve misconception clustering
-- Uses large language models and a broad experimental setup
+- Experimental design: [*The Error Is the Signal: Misconception Discovery via Step-Error Annotation Clustering*](https://aclanthology.org/2026.aacl-long.221/) — [paper-listed repository](https://github.com/sonkar-lab/llm_misconception_discovery)
+- Dataset: [MalRuleLib](https://github.com/sonkar-lab/malrulelib) — 101 executable mathematical misconception families
 
 ### This Project
-- Focuses specifically on **smaller language models**
-- Runs on **local consumer hardware**
+- Focuses specifically on smaller language models
+- Runs on local consumer hardware
 - Keeps the downstream embedding, clustering, and evaluation pipeline controlled
 - Tests how annotation-model size affects clustering quality
