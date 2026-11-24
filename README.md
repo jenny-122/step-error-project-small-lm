@@ -1,6 +1,4 @@
-# Step-Error Project: Small Language Models for Misconception Discovery
-
-## Project Context
+## Step-Error Project: Small Language Models for Misconception Discovery
 
 This repository is a scaled-down project inspired by *The Error Is the Signal: Misconception Discovery via Step-Error Annotation Clustering*.
 
