@@ -1,5 +1,3 @@
-# Experiment Plan
-
 ## Research Question
 
 How small can the language model used for step-error annotation become before downstream misconception-clustering quality degrades meaningfully?
