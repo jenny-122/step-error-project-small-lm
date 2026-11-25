@@ -1,0 +1,30 @@
+{
+  "dataset": "MalRuleLib",
+  "annotation_models": [
+    "Qwen3-0.6B",
+    "Qwen3-1.7B",
+    "Qwen3-4B",
+    "Qwen3-8B"
+  ],
+  "quantization": "Q4_K_M",
+  "embedding_encoder": null,
+  "experiment_a": {
+    "clustering": "kmeans",
+    "k": 101,
+    "n_init": 20,
+    "seeds": [42, 123, 456, 789, 1337]
+  },
+  "experiment_b": {
+    "clustering": "facility_location",
+    "lambda_scale": "median_nearest_neighbor_distance",
+    "lambda_multipliers": [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+  },
+  "primary_metric": "ari",
+  "secondary_metrics": [
+    "nmi",
+    "homogeneity",
+    "completeness",
+    "v_measure",
+    "k"
+  ]
+}
