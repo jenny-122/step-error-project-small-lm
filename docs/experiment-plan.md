@@ -1,125 +1,142 @@
 ## Research Question
 
-How small can the language model used for step-error annotation become before downstream misconception-clustering quality degrades meaningfully?
+How small can the Qwen3 model used for step-error annotation become before downstream misconception structure degrades meaningfully?
 
-The project studies annotation-model size first, then expands to encoder choice while keeping the clustering and evaluation setup controlled.
+The pilot keeps the annotation-model family, quantization, embedding encoder, dataset, split, and evaluation code controlled. It compares a fixed-taxonomy baseline against an unknown-granularity facility-location experiment.
 
-## Pipeline
+## Shared Pipeline
 
 ```text
 MalRuleLib record
       ↓
-annotation LM
+Qwen3 annotation LM
       ↓
 step-error annotation
       ↓
-embedding encoder
+fixed embedding encoder
       ↓
-K-means
+clustering
       ↓
-ACC / NMI / ARI / MTC
+ARI / NMI / homogeneity / completeness / V-measure
 ```
 
-## Original Paper Reference
+## Controlled Settings
 
-### Annotation models
-- GPT-OSS-120B
-- Qwen3-Next-80B-A3B
-- Gemma-4-31B-it
-
-### Embedding models
-- BGE-M3
-- BGE-large-en-v1.5
-- Qwen3-Embedding-0.6B
-- Qwen3-Embedding-4B
-
-### Controlled settings to preserve
+- Dataset: MalRuleLib
 - Problem-template-level train/test split
-- K-means with K = 101
+- Annotation family: Qwen3 only
+- Annotation sizes: 0.6B, 1.7B, 4B, 8B
+- Quantization: Q4_K_M
+- One fixed embedding encoder
+- Fixed embedding preprocessing and distance definition
+- Hidden 101 misconception-family labels used only for evaluation
+
+## Experiment A — Fixed Taxonomy Recovery
+
+Clustering:
+- K-means
+- K = 101
 - Euclidean distance
-- `n_init = 20`
+- n_init = 20
 - Seeds: 42, 123, 456, 789, 1337
-- Hungarian mapping fit on train for ACC
-- Metrics: ACC, NMI, ARI, MTC
 
-## Annotation Models
+Question:
 
-### Primary family
-Current planned Qwen3 size ladder:
-- Qwen3-0.6B
-- Qwen3-1.7B
-- Qwen3-4B
-- Qwen3-8B
+> Given the known taxonomy size, how well does each Qwen3 annotation representation recover the 101 MalRuleLib misconception families?
 
-Exact checkpoints and quantization will be verified before the full run.
+Primary metric:
+- ARI
 
-### Second family
-Still open. Current candidates:
-- Ministral 3
-- Gemma 3
+Secondary diagnostics:
+- NMI
+- homogeneity
+- completeness
+- V-measure
+- MTC where applicable
 
-The purpose of the second family is to test whether the size trend generalizes beyond Qwen.
+## Experiment B — Facility Location and Granularity Control
 
-## Annotation Setup
+Use metric uncapacitated facility location on the same saved annotation embeddings.
 
-- Run locally with `llama.cpp` / `llama-server`
-- Run one annotation model at a time
-- Use the paper's step-error annotation prompt unchanged across models
-- Keep decoding settings fixed within comparable runs
-- Pilot the output-token cap before fixing it
-- Save each model's annotations once and reuse them across encoder experiments
+Objective:
 
-## Encoders
+```text
+minimize assignment distance + λ × number of opened facilities
+```
 
-### Original paper
-- BGE-M3
-- BGE-large-en-v1.5
-- Qwen3-Embedding-0.6B
-- Qwen3-Embedding-4B
+The number of clusters is an output rather than an input.
 
-### Generic pretrained encoder baselines
-Use the same explicit pooling rule for these models, currently mean pooling:
-- BERT-base-uncased
-- RoBERTa-base
-- DeBERTa-base
+### Interpretation of λ
 
-### Sentence-embedding baselines
-- sentence-transformers/all-MiniLM-L6-v2
-- sentence-transformers/all-mpnet-base-v2
-- sentence-transformers/all-roberta-large-v1
+- smaller λ → cheaper to open facilities → more clusters → finer error distinctions
+- larger λ → more expensive to open facilities → fewer clusters → broader error categories
 
-The first grid should keep the encoder set interpretable rather than adding every available checkpoint.
+This makes λ a granularity or complexity control.
 
-## Metrics
+Potential educational interpretation:
+- coarse granularity may support class-level summaries or broad feedback
+- fine granularity may support more specific error descriptions or individualized feedback
 
-### ACC
-Map arbitrary K-means cluster IDs to misconception labels with Hungarian matching. Fit the mapping on training data and score accuracy on test data.
+This is an application hypothesis to test, not something the optimization itself guarantees.
 
-### NMI
-Measure how much information the predicted clustering preserves about the true misconception labels. No cluster-label renaming is required.
+### Evaluation
 
-### ARI
-Measure pairwise grouping agreement, adjusted for chance: which responses are correctly kept together or apart.
+For every λ, record:
+- λ
+- discovered K
+- ARI
+- NMI
+- homogeneity
+- completeness
+- V-measure
 
-### MTC
-Measure whether each misconception is recovered across different held-out problem templates.
+ARI is the primary bridge between Experiments A and B.
 
-## Staged Implementation
+Do not select λ simply because K is close to 101. If labels are used to choose λ, describe that explicitly as validation-based hyperparameter selection.
 
-1. Get one Qwen annotator through the full pipeline with one paper encoder
-2. Run the Qwen annotation-size ladder with the encoder fixed
-3. Reuse saved annotations across the encoder grid
-4. Add the second annotation-model family
-5. Add robustness checks only after the basic experiment is stable
+## Matched-K Diagnostic
 
-## Open Decisions
+Optional later diagnostic:
 
-- Second annotation-model family
-- Common quantization level
-- First fixed encoder for the annotation-size pilot
-- Final additional encoder subset
-- Exact MalRuleLib field mapping
-- Output-token cap
+If facility location discovers K = k at a selected λ, run K-means with the same k.
+
+This separates:
+- algorithm effects
+- granularity effects
+
+## Evaluation-Code Principle
+
+The same partition evaluator should score both experiments.
+
+```text
+true labels + predicted cluster assignments
+              ↓
+ARI
+NMI
+homogeneity
+completeness
+V-measure
+K
+```
+
+Experiment A and Experiment B should differ only at the clustering stage. Saved annotations and embeddings should be reused.
+
+## Minimal Scope
+
+1. Get one Qwen3 annotator through the full pipeline
+2. Fix one embedding encoder
+3. Run the Qwen3 size ladder with Experiment A
+4. Add Experiment B with a predeclared λ sweep
+5. Compare ARI and merge/fragmentation diagnostics
+6. Add matched-K or feedback-granularity analysis only after the core pipeline works
+
+## Deferred
+
+- second annotation-model family
+- large embedding-encoder grid
+- quantization sweep
+- rubric-aware real-world pilot
+- human feedback study
 
 ## Sources
 
